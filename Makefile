@@ -6,7 +6,10 @@ VERSION?=${BUILDTAG}
 # enable cgo because it's required by OSX keychain library
 CGO_ENABLED=1
 
-export CGO_ENABLED
+# enable go modules
+GO111MODULE=on
+
+export CGO_ENABLED GO111MODULE
 
 dep:
 	go get ./...
