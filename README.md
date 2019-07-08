@@ -4,11 +4,7 @@ Go-starter allows to bootstrap a new project from a template. It uses Git reposi
 
 ## Installation
 
-Use [homebrew tap](https://github.com/magento-mcom/homebrew-tap) to install go-starter. 
-
-First, follow instructions on how to add magento-mcom/tap [from here](https://github.com/magento-mcom/homebrew-tap/blob/master/README.md#setup).
-
-Then, use brew to install go-starter:
+Use [homebrew tap](https://github.com/magento-mcom/homebrew-tap) to install go-starter. First, follow instructions on how to add magento-mcom/tap [from here](https://github.com/magento-mcom/homebrew-tap/blob/master/README.md#setup). Then, use brew to install go-starter:
 
 ```
 brew update
