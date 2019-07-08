@@ -9,6 +9,9 @@ class GoStarter < Formula
   revision ${REVISION}
 
   def install
-    bin.install "go-starter*"
+    bin.install "go-starter"
+    bin.install "go-starter-replace"
+    bin.install "go-starter-github"
+    bin.install "go-starter-drone"
   end
 end
