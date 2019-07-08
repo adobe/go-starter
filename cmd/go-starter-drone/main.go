@@ -11,6 +11,7 @@ import (
 	"golang.org/x/oauth2"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -104,12 +105,14 @@ func main() {
 	}
 
 	// create an http client with oauth authentication.
-	auther := new(oauth2.Config).Client(context.Background(), &oauth2.Token{
-		AccessToken: pass,
-	})
+	auther := new(oauth2.Config).Client(context.Background(), &oauth2.Token{AccessToken: pass})
+	auther.Timeout = 30 * time.Second
 
 	// create the drone client with authenticator
 	dcli := drone.NewClient(uri.String(), auther)
+
+	ui.Printf("Sync repository list in drone\n")
+	sync(ui, uri, auther)
 
 	ui.Printf("Activating repository in drone\n")
 	_, err = dcli.RepoPost(org, repo)
@@ -178,6 +181,24 @@ func main() {
 	}
 }
 
+// sync repository list in drone, unfortunately there is no method for syncing in SDK
+func sync(ui *console.Console, uri *url.URL, cli *http.Client) {
+	endpoint := strings.TrimSuffix(uri.String(), "/") + "/api/user/repos?all=true&flush=true"
+
+	resp, err := cli.Get(endpoint)
+	if err != nil {
+		ui.Errorf("An error occurred: %v\n", err)
+		return
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != 200 {
+		ui.Errorf("An error occurred, returned status code is not 200, got %v instead\n", resp.StatusCode)
+		return
+	}
+}
+
 func ConfigureRegistry(ui *console.Console, dcli drone.Client, vcli *vault.Client, org string, repo string, r Registry) error {
 	value, err := vcli.Logical().Read("secret/" + r.VaultPath)
 	if err != nil {
@@ -185,11 +206,11 @@ func ConfigureRegistry(ui *console.Console, dcli drone.Client, vcli *vault.Clien
 	}
 
 	reg, err := dcli.Registry(org, repo, r.Addr)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "client error 404") {
 		return err
 	}
 
-	if reg.ID != 0 {
+	if reg != nil && reg.ID != 0 {
 		ui.Printf("  - Updating %#v\n", r.Addr)
 		_, err := dcli.RegistryUpdate(org, repo, &drone.Registry{
 			ID:       reg.ID,
@@ -227,11 +248,11 @@ func ConfigureSecret(ui *console.Console, dcli drone.Client, vcli *vault.Client,
 	}
 
 	sec, err := dcli.Secret(org, repo, s.Name)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "client error 404") {
 		return err
 	}
 
-	if sec.ID != 0 {
+	if sec != nil && sec.ID != 0 {
 		ui.Printf("  - Updating %#v\n", s.Name)
 		_, err := dcli.SecretUpdate(org, repo, &drone.Secret{
 			ID:     sec.ID,

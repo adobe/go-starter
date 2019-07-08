@@ -60,7 +60,7 @@ func main() {
 
 	// Clone template repository
 	if !skipClone {
-		ui.Printf("Cloning template %v\n", template)
+		ui.Titlef("Cloning template %v\n", template)
 
 		if err := maker.Checkout(destination, clone, branch); err != nil {
 			ui.Fatalf("An error occurred: %v\n", err)
