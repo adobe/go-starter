@@ -1,0 +1,62 @@
+workspace:
+  base: /go
+  path: src/github.com/magento-mcom/go-starter
+
+pipeline:
+  install:
+    image: mcom/gobuilder:1.12
+    pull: true
+    commands:
+      - "make dep"
+
+  test:
+    image: mcom/gobuilder:1.12
+    pull: true
+    commands:
+      - "make test"
+
+  build:
+    image: mcom/gobuilder:1.12
+    pull: true
+    group: build
+    environment:
+      GOOS: "darwin"
+      GOARCH: "amd64"
+      BUILDTAG: "${DRONE_TAG}"
+      BUILDCOMMIT: "${DRONE_COMMIT_SHA:0:7}"
+      BUILDLDFLAGS: ""
+      BUILDARGS: ""
+      BUILDOUTPREFIX: "build/darwin-amd64/"
+    commands:
+      - "make build"
+      - "tar -C build/darwin-amd64 -cvzf go-starter-darwin-amd64.tgz ."
+    when:
+      event: [ tag ]
+
+  release:
+    group: upload
+    image: socialengine/github-release
+    pull: true
+    environment:
+      GITHUB_RELEASE_VERSION: v0.7.2
+    commands:
+      - "github-release release --user magento-mcom --repo go-starter --tag ${DRONE_TAG} --name ${DRONE_TAG}"
+      - "github-release upload  --user magento-mcom --repo go-starter --tag ${DRONE_TAG} --name go-starter-darwin-amd64.tgz --file ./go-starter-darwin-amd64.tgz"
+    secrets: [ GITHUB_TOKEN ]
+    when:
+      event: [ tag ]
+
+  update-tap:
+    image: mcom/brewbuilder
+    pull: true
+    secrets: [ GITHUB_TOKEN ]
+    # brewbuilder settings
+    tap: "https://github.com/magento-mcom/homebrew-tap"
+    formula: "Formula/go-starter.rb"
+    template: "formula.template.rb"
+    version: "${DRONE_TAG}"
+    revision: "${DRONE_BUILD_NUMBER}"
+    url: "https://github.com/magento-mcom/go-starter/releases/download/${DRONE_TAG}/go-starter-darwin-amd64.tgz"
+    hash_file: "go-starter-darwin-amd64.tgz"
+    when:
+      event: [ tag ]
