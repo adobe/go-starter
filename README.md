@@ -35,7 +35,7 @@ Now, go-starter will clone [go-scaffolding](https://github.com/magento-mcom/go-s
 
 ## Templates
 
-Templates are GitHub repository like this one: https://github.com/magento-mcom/go-scaffolding. Go-starter clones repository and then uses `.starter.yml` configuration file to execute following steps. This configuration file consist of two sections:
+Templates are regulaer Git repository like this one. If you try to use go-starter with random repository it will just clone it to your computer. To make use of go-starter you need to let it know how to "post-process" template repository after it has been cloned. To do so, you need to define `.starter.yml` configuration file. After go-starter clones repository it tries to load `.starter.yml` configuration file to execute additional actions and turn template into a project. This configuration file defines two sections:
 
 - `questions` - list of questions to be asked from user, for example: project name, binary name, team etc
 - `tasks` - list of commands to be executed (these can be globally installed binaries, or binaries packed with template itself)
@@ -60,17 +60,16 @@ tasks:
   - command: [ "rm", ".starter.yml" ]
 ```
 
-This file defines two questions which would ask user to define `application_name` and `github_owners`. Then, go-starter will execute `go-starter-replace` binary (shipped with go-starter) to replace placeholders in the files of the template. Finally it will remove `.starter.yml`.
+This file defines two questions, asking user to enter `application_name` and `github_owners` variables. Then, go-starter will execute `go-starter-replace` binary (shipped with go-starter) to replace placeholders in the files of the template, turning generic tempalte into something more specific to the project. Finally it will use standard `rm ` command to remove `.starter.yml`.
 
-Each template may contain custom tasks placed in `.starter` folder. For example, you can create a bash script which would generate CODEOWNERS file and place it under `.starter/make-owners`. Then, add it as tasks in `.starter.yml`:
+Each template may contain custom tasks placed in `.starter` folder. For example, you can create a bash script which would generate CODEOWNERS file and place it under `.starter/make-owners`. Then, add it as tasks in `.starter.yml` like so:
 
 ```yaml
 ...
 
 tasks:
-  - command: [ "go-starter-replace" ]
-  - command: [ "rm", ".starter.yml" ]
+...
   - command: [ "./.starter/make-owners" ]
 ```
 
-Custom scripts may access variables (answers to the questions) using environment variables. They are uppercased and prefixed with `STARTER_`. Following example above, `./.starter/make-owners` may get `github_owners` variable using `STARTER_GITHUB_OWNERS` environment variable. 
+Custom scripts may access variables (answers to the questions) through environment variables. They are uppercased and prefixed with `STARTER_`. Following example above, `./.starter/make-owners` may get `github_owners` variable using `STARTER_GITHUB_OWNERS` environment variable. 
