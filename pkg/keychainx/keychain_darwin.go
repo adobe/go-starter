@@ -1,15 +1,10 @@
+// +build darwin
+
 package keychainx
 
 import (
-	"errors"
 	"github.com/keybase/go-keychain"
 )
-
-var ErrNotFound = errors.New("item not found")
-
-func Ask(label, help string) (string, string, error) {
-	return "", "", nil
-}
 
 func Save(label, user, password string) error {
 	item := keychain.NewItem()
