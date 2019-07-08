@@ -35,7 +35,9 @@ Now, go-starter will clone [go-scaffolding](https://github.com/magento-mcom/go-s
 
 ## Templates
 
-Templates are regulaer Git repository like this one. If you try to use go-starter with random repository it will just clone it to your computer. To make use of go-starter you need to let it know how to "post-process" template repository after it has been cloned. To do so, you need to define `.starter.yml` configuration file. After go-starter clones repository it tries to load `.starter.yml` configuration file to execute additional actions and turn template into a project. This configuration file defines two sections:
+Templates are regular Git repositories like this one. If you try to use go-starter with random repository it will just clone it to your computer. To make use of go-starter you would need to let it know how to "post-process" template repository after it has been cloned. To do so, you need to define `.starter.yml` configuration file. 
+
+After go-starter clones repository it tries to load `.starter.yml` to execute additional actions and turn template into a project. This configuration file defines two sections:
 
 - `questions` - list of questions to be asked from user, for example: project name, binary name, team etc
 - `tasks` - list of commands to be executed (these can be globally installed binaries, or binaries packed with template itself)
