@@ -16,7 +16,7 @@ pipeline:
       - "make test"
 
   build:
-    image: mcom/gobuilder:1.12
+    image: mcom/gobuilder:1.12cross
     pull: true
     group: build
     environment:
@@ -24,14 +24,14 @@ pipeline:
       GOARCH: "amd64"
       BUILDTAG: "${DRONE_TAG}"
       BUILDCOMMIT: "${DRONE_COMMIT_SHA:0:7}"
-      BUILDLDFLAGS: ""
+      BUILDLDFLAGS: "-linkmode external -s"
       BUILDARGS: ""
       BUILDOUTPREFIX: "build/darwin-amd64/"
+      CC: o64-clang
+      CXX: o64-clang++
     commands:
       - "make build"
       - "tar -C build/darwin-amd64 -cvzf go-starter-darwin-amd64.tgz ."
-    when:
-      event: [ tag ]
 
   release:
     group: upload
