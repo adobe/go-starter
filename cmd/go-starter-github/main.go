@@ -36,6 +36,7 @@ func usage() {
 func main() {
 	var remote string
 	var public, issues, projects, wiki bool
+	var collaborators SliceFlag
 
 	flag.Usage = usage
 	flag.StringVar(&remote, "remote", "upstream", "Name of the remote in local repository")
@@ -43,6 +44,7 @@ func main() {
 	flag.BoolVar(&projects, "with-projects", false, "Enable projects in GitHub")
 	flag.BoolVar(&wiki, "with-wiki", false, "Enable wiki page in GitHub")
 	flag.BoolVar(&public, "public", false, "Make repository public")
+	flag.Var(&collaborators, "collaborator", "Add collaborators to the repository by GitHub username. You can grant permissions using following format: <username>:<permission>. Permission can be: pull (read only), push (read and write) or admin (everything), default is push. Can be specified multiple times. Example: --collaborator octocat:pull")
 	flag.Parse()
 
 	ui := console.New(os.Stdin, os.Stdout)
@@ -129,6 +131,16 @@ func main() {
 	if err := run("git", "push", "--set-upstream", "upstream", "master"); err != nil {
 		ui.Fatalf("An error occurred while running git push: %v\n", err)
 	}
+
+	for _, c := range collaborators {
+		user, perm := CollaboratorPermissions(c)
+
+		_, err := cli.Repositories.AddCollaborator(context.Background(), org, name, user, &github.RepositoryAddCollaboratorOptions{
+			Permission: perm,
+		})
+
+		ui.Errorf("An error occurred while adding %#v collaborator: %v\n", c, err)
+	}
 }
 
 // Run a cli command
@@ -167,4 +179,27 @@ func AskCredentials(ui *console.Console) (user string, pass string) {
 
 		ui.Errorf("Credentials do not appear to be valid, try again...\n")
 	}
+}
+
+func CollaboratorPermissions(c string) (string, string) {
+	if parts := strings.SplitN(c, ":", 2); len(parts) == 2 {
+		return parts[0], parts[1]
+	}
+
+	return c, "push"
+}
+
+type SliceFlag []string
+
+func (s *SliceFlag) Set(v string) error {
+	values := strings.Split(v, ",")
+	for _, v := range values {
+		*s = append(*s, strings.TrimSpace(v))
+	}
+
+	return nil
+}
+
+func (s *SliceFlag) String() string {
+	return strings.Join(*s, ",")
 }
