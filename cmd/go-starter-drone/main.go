@@ -114,7 +114,7 @@ func main() {
 // AskCredentials (token) for drone
 func AskCredentials(ui *console.Console, u *url.URL) (pass string) {
 	for {
-		ui.Printf("Follow this link to get your Personal Token: %v://%v/account/token.\n", u.Scheme, u.Host)
+		ui.Printf("Follow this link to get your Personal Token: %v://%v/account.\n", u.Scheme, u.Host)
 		ui.Printf("Enter your personal token: ")
 		ui.Scanln(&pass)
 
