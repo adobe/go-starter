@@ -96,7 +96,7 @@ func main() {
 			ui.Fatalf("An error occurred while creating GitHub repository: %v\n", err)
 		}
 
-		ui.Printf("Repository %v/%v already exists\n", name, org)
+		ui.Printf("Repository %v/%v already exists\n", org, name)
 		return
 	}
 
@@ -139,7 +139,9 @@ func main() {
 			Permission: perm,
 		})
 
-		ui.Errorf("An error occurred while adding %#v collaborator: %v\n", c, err)
+		if err != nil {
+			ui.Errorf("An error occurred while adding %#v collaborator: %v\n", c, err)
+		}
 	}
 }
 
