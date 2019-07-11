@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: default
+name: test
 
 platform:
   os: linux
@@ -23,6 +23,33 @@ steps:
   image: mcom/gobuilder:1.12
   pull: always
   commands: [ "make test" ]
+
+---
+kind: pipeline
+name: release
+
+platform:
+  os: linux
+  arch: amd64
+
+workspace:
+  base: /go
+  path: src/github.com/magento-mcom/go-starter
+
+image_pull_secrets:
+  - docker_registry
+
+depends_on: [ test ]
+
+trigger:
+  event: [ tag ]
+  status: [ "success"]
+
+steps:
+- name: install
+  image: mcom/gobuilder:1.12
+  pull: always
+  commands: [ "make dep" ]
 
 - name: build
   image: mcom/gobuilder:1.12cross
@@ -52,8 +79,6 @@ steps:
   environment:
     GITHUB_RELEASE_VERSION: v0.7.2
     GITHUB_TOKEN: { from_secret: github_token }
-  when:
-    event: [ tag ]
 
 - name: update-tap
   pull: always
@@ -68,8 +93,6 @@ steps:
     version: ${DRONE_TAG}
   environment:
     GITHUB_TOKEN: { from_secret: github_token }
-  when:
-    event: [ tag ]
 
 ---
 kind: secret
