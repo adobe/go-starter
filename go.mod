@@ -3,9 +3,7 @@ module github.com/magento-mcom/go-starter
 go 1.12
 
 require (
-	github.com/99designs/httpsignatures-go v0.0.0-20170731043157-88528bf4ca7e // indirect
-	github.com/drone/drone-go v0.8.4
-	github.com/google/go-cmp v0.2.0 // indirect
+	github.com/drone/drone-go v1.0.4
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/hashicorp/vault/api v1.0.2
