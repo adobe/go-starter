@@ -10,25 +10,24 @@ workspace:
   base: /go
   path: src/github.com/magento-mcom/go-starter
 
+image_pull_secrets:
+  - docker_registry
+
 steps:
 - name: install
-  pull: always
   image: mcom/gobuilder:1.12
-  commands:
-  - make dep
+  pull: always
+  commands: [ "make dep" ]
 
 - name: test
-  pull: always
   image: mcom/gobuilder:1.12
-  commands:
-  - make test
+  pull: always
+  commands: [ "make test" ]
 
 - name: build
-  pull: always
   image: mcom/gobuilder:1.12cross
-  commands:
-  - make build
-  - tar -C build/darwin-amd64 -cvzf go-starter-darwin-amd64.tgz .
+  pull: always
+  commands: [ "make build" ]
   environment:
     BUILDCOMMIT: ${DRONE_COMMIT_SHA:0:7}
     BUILDLDFLAGS: -linkmode external -s
@@ -39,15 +38,20 @@ steps:
     GOARCH: amd64
     GOOS: darwin
 
-- name: release
+- name: pack
+  image: mcom/gobuilder:1.12
   pull: always
+  commands: [ "tar -C build/darwin-amd64 -cvzf go-starter-darwin-amd64.tgz ." ]
+
+- name: release
   image: socialengine/github-release
+  pull: always
   commands:
   - github-release release --user magento-mcom --repo go-starter --tag ${DRONE_TAG} --name ${DRONE_TAG}
   - github-release upload  --user magento-mcom --repo go-starter --tag ${DRONE_TAG} --name go-starter-darwin-amd64.tgz --file ./go-starter-darwin-amd64.tgz
   environment:
     GITHUB_RELEASE_VERSION: v0.7.2
-    GITHUB_TOKEN: { from_secret: GITHUB_TOKEN }
+    GITHUB_TOKEN: { from_secret: github_token }
   when:
     event: [ tag ]
 
@@ -63,7 +67,20 @@ steps:
     url: https://github.com/magento-mcom/go-starter/releases/download/${DRONE_TAG}/go-starter-darwin-amd64.tgz
     version: ${DRONE_TAG}
   environment:
-    GITHUB_TOKEN: { from_secret: GITHUB_TOKEN }
+    GITHUB_TOKEN: { from_secret: github_token }
   when:
     event: [ tag ]
 
+---
+kind: secret
+name: docker_registry
+get:
+  path: secret/dx_magento_mom_droneci/registry/docker.io
+  name: config
+
+---
+kind: secret
+name: github_token
+get:
+  path: secret/dx_magento_mom_droneci/github
+  name: token
