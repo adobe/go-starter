@@ -11,9 +11,13 @@ import (
 	"strings"
 )
 
+var version, commit string
+
 func usage() {
 	out := flag.CommandLine.Output()
 
+	_, _ = fmt.Fprintf(out, "go-starter version %v (commit %v)\n", version, commit)
+	_, _ = fmt.Fprintf(out, "\n")
 	_, _ = fmt.Fprintf(out, "Usage: %s [flags] <template> <destination>\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
 	_, _ = fmt.Fprintf(out, "    %s -var \"app_name=awesome-project\" skolodyazhnyy/go-starter-template awesome-project\n", os.Args[0])

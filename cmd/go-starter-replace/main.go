@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"github.com/magento-mcom/go-starter/pkg/console"
 	"io/ioutil"
 	"os"
@@ -10,11 +11,30 @@ import (
 	"strings"
 )
 
+var version, commit string
 var skips = []string{".starter/", ".starter.yml", ".git/"}
+
+func usage() {
+	out := flag.CommandLine.Output()
+
+	_, _ = fmt.Fprintf(out, "go-starter-replace version %v (commit %v)\n",version, commit)
+	_, _ = fmt.Fprintf(out, "\n")
+	_, _ = fmt.Fprintf(out, "Usage: %s [flags]\n", os.Args[0])
+	_, _ = fmt.Fprintf(out, "\nExample:\n")
+	_, _ = fmt.Fprintf(out, "    STARTER_PLACEHOLDER1=VALUE1 STARTER_PLACEHOLDER2=VALUE2 %s\n", os.Args[0])
+
+	if flag.NFlag() != 0 {
+		_, _ = fmt.Fprintf(out, "\nFlags:\n")
+		flag.PrintDefaults()
+	}
+
+	_, _ = fmt.Fprintf(out, "\n")
+}
 
 func main() {
 	var prefix, suffix string
 
+	flag.Usage = usage
 	flag.StringVar(&prefix, "prefix", "<", "Placeholder prefix")
 	flag.StringVar(&suffix, "suffix", ">", "Placeholder suffix")
 	flag.Parse()

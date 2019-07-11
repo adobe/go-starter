@@ -14,9 +14,13 @@ import (
 	"time"
 )
 
+var version, commit string
+
 func usage() {
 	out := flag.CommandLine.Output()
 
+	_, _ = fmt.Fprintf(out, "go-starter-github version %v (commit %v)\n", version, commit)
+	_, _ = fmt.Fprintf(out, "\n")
 	_, _ = fmt.Fprintf(out, "Usage: %s [flags] <github-org> <github-repo>\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
 	_, _ = fmt.Fprintf(out, "    %s magento-mcom awesome-project\n", os.Args[0])
