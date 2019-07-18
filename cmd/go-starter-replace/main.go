@@ -17,7 +17,7 @@ var skips = []string{".starter/", ".starter.yml", ".git/"}
 func usage() {
 	out := flag.CommandLine.Output()
 
-	_, _ = fmt.Fprintf(out, "go-starter-replace version %v (commit %v)\n",version, commit)
+	_, _ = fmt.Fprintf(out, "go-starter-replace version %v (commit %v)\n", version, commit)
 	_, _ = fmt.Fprintf(out, "\n")
 	_, _ = fmt.Fprintf(out, "Usage: %s [flags]\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
@@ -43,6 +43,8 @@ func main() {
 
 	vars := variables()
 
+	var renames []string
+
 	// walk through current folder and replace variables
 	err := filepath.Walk(".", func(path string, file os.FileInfo, err error) error {
 		if err != nil {
@@ -56,20 +58,11 @@ func main() {
 			}
 		}
 
-		dir := filepath.Dir(path)
 		name := file.Name()
 
 		if renamed := rename(name, prefix, suffix, vars); renamed != name {
-			ui.Printf("Renaming %#v to %#v\n", path, filepath.Join(dir, renamed))
-			if err := os.Rename(path, filepath.Join(dir, renamed)); err != nil {
-				return err
-			}
-
-			name = renamed
-			path = filepath.Join(dir, name)
+			renames = append(renames, path)
 		}
-
-		path = rename(path, prefix, suffix, vars)
 
 		if file.IsDir() {
 			return nil
@@ -86,6 +79,15 @@ func main() {
 
 		return nil
 	})
+
+	for _, path := range renames {
+		renamed := rename(path, prefix, suffix, vars)
+
+		ui.Printf("Renaming %#v to %#v\n", path, renamed)
+		if err := os.Rename(path, renamed); err != nil {
+			ui.Errorf("Unable to rename path %#v: %v\n", path, err)
+		}
+	}
 
 	if err != nil {
 		ui.Fatalf("An error occurred while traversing file system: %v\n", err)

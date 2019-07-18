@@ -2,10 +2,6 @@
 kind: pipeline
 name: test
 
-platform:
-  os: linux
-  arch: amd64
-
 workspace:
   base: /go
   path: src/github.com/magento-mcom/go-starter
@@ -27,10 +23,6 @@ steps:
 ---
 kind: pipeline
 name: release
-
-platform:
-  os: linux
-  arch: amd64
 
 workspace:
   base: /go
