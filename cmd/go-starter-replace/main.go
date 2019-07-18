@@ -69,6 +69,8 @@ func main() {
 			path = filepath.Join(dir, name)
 		}
 
+		path = rename(path, prefix, suffix, vars)
+
 		if file.IsDir() {
 			return nil
 		}
