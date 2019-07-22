@@ -8,6 +8,7 @@ import (
 	"github.com/magento-mcom/go-starter/pkg/console"
 	"github.com/magento-mcom/go-starter/pkg/keychainx"
 	"golang.org/x/oauth2"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"os/exec"
@@ -16,6 +17,13 @@ import (
 )
 
 var version, commit string
+
+var (
+	fileSecrets        SliceFlag
+	fileSecretsPull    SliceFlag
+	literalSecrets     SliceFlag
+	literalSecretsPull SliceFlag
+)
 
 func usage() {
 	out := flag.CommandLine.Output()
@@ -36,6 +44,10 @@ func usage() {
 
 func main() {
 	flag.Usage = usage
+	flag.Var(&fileSecrets, "secret-file", "Create a secret from file (eq. --secret-file=secret_name=./path/to/file)")
+	flag.Var(&fileSecretsPull, "pull-secret-file", "Create a secret from file available for pull-requests (eq. --pull-secret-file=secret_name=./path/to/file)")
+	flag.Var(&literalSecrets, "secret-literal", "Create a secret from literal (eq. --secret-literal=secret_name=value)")
+	flag.Var(&literalSecretsPull, "pull-secret-literal", "Create a secret from literal available for pull-requests (eq. --pull-secret-literal=secret_name=value)")
 	flag.Parse()
 
 	ui := console.New(os.Stdin, os.Stdout)
@@ -93,6 +105,8 @@ func main() {
 		ui.Fatalf("An error occurred: %v\n", err)
 	}
 
+	ImportSecrets(ui, dcli, org, repo)
+
 	ui.Titlef("Triggering build by making empty commit\n")
 	if err := run("git", "commit", "--allow-empty", "-m", "Trigger CI build"); err != nil {
 		ui.Fatalf("An error occurred when making commit: %v\n", err)
@@ -109,6 +123,94 @@ func main() {
 	if last, err := dcli.BuildLast(org, repo, ""); err == nil {
 		ui.Printf("Build #%v started: %v://%v/%v/%v/%v\n", last.Number, uri.Scheme, uri.Host, org, repo, last.Number)
 	}
+}
+
+func ImportSecrets(ui *console.Console, dcli drone.Client, org string, repo string) {
+	if len(fileSecrets)+len(fileSecretsPull)+len(literalSecrets)+len(literalSecretsPull) == 0 {
+		return
+	}
+
+	ui.Titlef("Importing repository secrets...\n")
+
+	for _, secret := range literalSecretsPull {
+		key, value := SplitKeyValue(secret)
+
+		ui.Printf("Adding secret %#v...", key)
+		if err := CreateOrUpdateSecret(dcli, org, repo, key, value, true); err != nil {
+			ui.Errorf("An error occurred while adding secret: %v\n", err)
+		}
+	}
+
+	for _, secret := range literalSecrets {
+		key, value := SplitKeyValue(secret)
+
+		ui.Printf("Adding secret %#v...", key)
+		if err := CreateOrUpdateSecret(dcli, org, repo, key, value, false); err != nil {
+			ui.Errorf("An error occurred while adding secret: %v\n", err)
+		}
+	}
+
+	for _, secret := range fileSecretsPull {
+		key, file := SplitKeyValue(secret)
+		value, err := ioutil.ReadFile(file)
+		if err != nil {
+			ui.Errorf("An error occurred while reading secret file %#v: %v\n", file, err)
+		}
+
+		ui.Printf("Adding secret %#v...", key)
+		if err := CreateOrUpdateSecret(dcli, org, repo, key, string(value), true); err != nil {
+			ui.Errorf("An error occurred while adding secret: %v\n", err)
+		}
+	}
+
+	for _, secret := range fileSecrets {
+		key, file := SplitKeyValue(secret)
+		value, err := ioutil.ReadFile(file)
+		if err != nil {
+			ui.Errorf("An error occurred while reading secret file %#v: %v\n", file, err)
+		}
+
+		ui.Printf("Adding secret %#v...", key)
+		if err := CreateOrUpdateSecret(dcli, org, repo, key, string(value), false); err != nil {
+			ui.Errorf("An error occurred while adding secret: %v\n", err)
+		}
+	}
+}
+
+// CreateOrUpdateSecret in drone
+func CreateOrUpdateSecret(dcli drone.Client, owner, repo, key string, value string, pulls bool) error {
+	secret, err := dcli.Secret(owner, repo, key)
+	if err != nil && strings.Contains(err.Error(), "client error 404") {
+		_, err = dcli.SecretCreate(owner, repo, &drone.Secret{
+			Name:            key,
+			Data:            value,
+			PullRequest:     pulls,
+			PullRequestPush: pulls,
+		})
+
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+
+	secret.Name = key
+	secret.Data = value
+	secret.PullRequest = pulls
+	secret.PullRequestPush = pulls
+
+	_, err = dcli.SecretUpdate(owner, repo, secret)
+	return err
+}
+
+// SplitKeyValue for string in format key=value
+func SplitKeyValue(c string) (string, string) {
+	if parts := strings.SplitN(c, "=", 2); len(parts) == 2 {
+		return parts[0], parts[1]
+	}
+
+	return c, ""
 }
 
 // AskCredentials (token) for drone
@@ -145,4 +247,19 @@ func run(name string, args ...string) error {
 	cmd.Env = os.Environ()
 
 	return cmd.Run()
+}
+
+type SliceFlag []string
+
+func (s *SliceFlag) Set(v string) error {
+	values := strings.Split(v, ",")
+	for _, v := range values {
+		*s = append(*s, strings.TrimSpace(v))
+	}
+
+	return nil
+}
+
+func (s *SliceFlag) String() string {
+	return strings.Join(*s, ",")
 }
