@@ -7,6 +7,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/magento-mcom/go-starter/pkg/console"
 	"github.com/magento-mcom/go-starter/pkg/keychainx"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -34,7 +35,7 @@ func usage() {
 }
 
 func main() {
-	var remote string
+	var remote, deployKey string
 	var public, issues, projects, wiki bool
 	var collaborators SliceFlag
 
@@ -43,6 +44,7 @@ func main() {
 	flag.BoolVar(&issues, "with-issues", false, "Enable issues in GitHub")
 	flag.BoolVar(&projects, "with-projects", false, "Enable projects in GitHub")
 	flag.BoolVar(&wiki, "with-wiki", false, "Enable wiki page in GitHub")
+	flag.StringVar(&deployKey, "deploy-key", "", "Add SSH deployment key to the repository, add ':rw' suffix to grant write permissions to the key")
 	flag.BoolVar(&public, "public", false, "Make repository public")
 	flag.Var(&collaborators, "collaborator", "Add collaborators to the repository by GitHub username. You can grant permissions using following format: <username>:<permission>. Permission can be: pull (read only), push (read and write) or admin (everything), default is push. Can be specified multiple times. Example: --collaborator octocat:pull")
 	flag.Parse()
@@ -133,7 +135,7 @@ func main() {
 	}
 
 	for _, c := range collaborators {
-		user, perm := CollaboratorPermissions(c)
+		user, perm := SplitPermissions(c, "push")
 
 		_, err := cli.Repositories.AddCollaborator(context.Background(), org, name, user, &github.RepositoryAddCollaboratorOptions{
 			Permission: perm,
@@ -141,6 +143,27 @@ func main() {
 
 		if err != nil {
 			ui.Errorf("An error occurred while adding %#v collaborator: %v\n", c, err)
+		}
+	}
+
+	if deployKey != "" {
+		key, perm := SplitPermissions(deployKey, "ro")
+
+		ui.Printf("Adding deployment key %#v with %#v permissions\n", key, perm)
+
+		data, err := ioutil.ReadFile(key)
+		if err != nil {
+			ui.Fatalf("Unable to read deployment key: %v\n", err)
+		}
+
+		_, _, err = cli.Repositories.CreateKey(context.Background(), org, name, &github.Key{
+			Title:    StringPtr("Deploy Key"),
+			Key:      StringPtr(string(data)),
+			ReadOnly: BoolPtr(perm != "rw"),
+		})
+
+		if err != nil {
+			ui.Errorf("An error occurred while adding %#v deployment key: %v\n", key, err)
 		}
 	}
 }
@@ -183,12 +206,12 @@ func AskCredentials(ui *console.Console) (user string, pass string) {
 	}
 }
 
-func CollaboratorPermissions(c string) (string, string) {
+func SplitPermissions(c, d string) (string, string) {
 	if parts := strings.SplitN(c, ":", 2); len(parts) == 2 {
 		return parts[0], parts[1]
 	}
 
-	return c, "push"
+	return c, d
 }
 
 type SliceFlag []string
@@ -204,4 +227,12 @@ func (s *SliceFlag) Set(v string) error {
 
 func (s *SliceFlag) String() string {
 	return strings.Join(*s, ",")
+}
+
+func BoolPtr(v bool) *bool {
+	return &v
+}
+
+func StringPtr(v string) *string {
+	return &v
 }
