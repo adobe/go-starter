@@ -25,7 +25,7 @@ Run go-starter with template repository URL and path where you would like to cre
 go-starter https://github.com/magento-mcom/go-service-starter awesome-project
 ```
 
-You can specify full GitHub URL or just repository name (like so `go-scaffolding`). Go-starter automatically assumes template is published on GitHub under magento-mcom organisation, so you can ommit these parts.
+You can specify full GitHub URL or just repository name (like so `go-service-starter`). Go-starter automatically assumes template is published on GitHub under magento-mcom organisation, so you can ommit these parts.
 
 Now, go-starter will clone [go-service-starter](https://github.com/magento-mcom/go-service-starter) into `./awesome-project` directory and run tasks defined in [`.starter.yml`](https://github.com/magento-mcom/go-service-starter/blob/master/.starter.yml). See "Templates" for more details.
 
