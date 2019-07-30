@@ -55,10 +55,10 @@ func main() {
 	}
 
 	// Get clone URL
-	clone := maker.ResolveTemplateURL(template)
+	cloneURL := maker.ResolveTemplateURL(template)
 
 	// Add service variables
-	vars["template_url"] = clone
+	vars["template_url"] = cloneURL
 	vars["template_branch"] = branch
 	vars["destination"] = destination
 
@@ -66,7 +66,7 @@ func main() {
 	if !skipClone {
 		ui.Titlef("Cloning template %v\n", template)
 
-		if err := maker.Checkout(destination, clone, branch); err != nil {
+		if err := maker.Checkout(destination, cloneURL, branch); err != nil {
 			ui.Fatalf("An error occurred: %v\n", err)
 		}
 	}

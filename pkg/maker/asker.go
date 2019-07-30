@@ -9,7 +9,7 @@ type console interface {
 	Titlef(format string, args ...interface{})
 	Printf(format string, args ...interface{})
 	Errorf(format string, args ...interface{})
-	Scanln(arg interface{})
+	ReadString(string) string
 }
 
 // Ask questions from questions.yml
@@ -41,9 +41,7 @@ func Ask(ui console, questions []Question, vars map[string]string) (map[string]s
 				ui.Printf("Default: %v\n", q.Default)
 			}
 
-			ui.Printf("Enter %v: ", q.Name)
-			ui.Scanln(&answer)
-
+			answer = ui.ReadString(fmt.Sprintf("Enter %v: ", q.Name))
 			if answer == "" {
 				answer = q.Default
 			}

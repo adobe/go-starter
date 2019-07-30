@@ -139,9 +139,13 @@ func replace(filename, prefix, suffix string, params map[string]string) (bool, e
 		output = bytes.Replace(output, []byte(prefix+k+suffix), []byte(v), -1)
 	}
 
+	if bytes.Equal(input, output) {
+		return false, nil
+	}
+
 	if err = ioutil.WriteFile(filename, output, 0666); err != nil {
 		return false, err
 	}
 
-	return !bytes.Equal(input, output), nil
+	return true, nil
 }

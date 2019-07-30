@@ -52,8 +52,6 @@ func main() {
 
 	ui := console.New(os.Stdin, os.Stdout)
 
-	org, repo := flag.Arg(1), flag.Arg(2)
-
 	uri, err := url.Parse(flag.Arg(0))
 	if err != nil {
 		flag.Usage()
@@ -65,6 +63,7 @@ func main() {
 		ui.Fatalf("Drone hostname is empty. Enter URL with protocol, for example: https://drone.bcn.magento.com.\n")
 	}
 
+	org, repo := flag.Arg(1), flag.Arg(2)
 	if org == "" {
 		flag.Usage()
 		ui.Fatalf("GitHub organisation is empty\n")
@@ -83,17 +82,18 @@ func main() {
 
 	if err == keychainx.ErrNotFound {
 		pass = AskCredentials(ui, uri)
+
 		if err := keychainx.Save(uri.Host, "drone", pass); err != nil {
 			ui.Errorf("An error occurred while writing Drone token to keychain: %v\n", err)
 		}
 	}
 
-	// create an http client with oauth authentication.
-	auther := new(oauth2.Config).Client(context.Background(), &oauth2.Token{AccessToken: pass})
-	auther.Timeout = 30 * time.Second
+	// create an http client with oauth authentication
+	auth := new(oauth2.Config).Client(context.Background(), &oauth2.Token{AccessToken: pass})
+	auth.Timeout = 30 * time.Second
 
 	// create the drone client with authenticator
-	dcli := drone.NewClient(uri.String(), auther)
+	dcli := drone.NewClient(uri.String(), auth)
 
 	ui.Printf("Sync repository list in drone\n")
 	if _, err := dcli.RepoListSync(); err != nil {
@@ -135,7 +135,7 @@ func ImportSecrets(ui *console.Console, dcli drone.Client, org string, repo stri
 	for _, secret := range literalSecretsPull {
 		key, value := SplitKeyValue(secret)
 
-		ui.Printf("Adding secret %#v...", key)
+		ui.Printf("Adding secret %#v from literal...\n", key)
 		if err := CreateOrUpdateSecret(dcli, org, repo, key, value, true); err != nil {
 			ui.Errorf("An error occurred while adding secret: %v\n", err)
 		}
@@ -144,7 +144,7 @@ func ImportSecrets(ui *console.Console, dcli drone.Client, org string, repo stri
 	for _, secret := range literalSecrets {
 		key, value := SplitKeyValue(secret)
 
-		ui.Printf("Adding secret %#v...", key)
+		ui.Printf("Adding secret %#v from literal...\n", key)
 		if err := CreateOrUpdateSecret(dcli, org, repo, key, value, false); err != nil {
 			ui.Errorf("An error occurred while adding secret: %v\n", err)
 		}
@@ -157,7 +157,7 @@ func ImportSecrets(ui *console.Console, dcli drone.Client, org string, repo stri
 			ui.Errorf("An error occurred while reading secret file %#v: %v\n", file, err)
 		}
 
-		ui.Printf("Adding secret %#v...", key)
+		ui.Printf("Adding secret %#v from file...\n", key)
 		if err := CreateOrUpdateSecret(dcli, org, repo, key, string(value), true); err != nil {
 			ui.Errorf("An error occurred while adding secret: %v\n", err)
 		}
@@ -170,7 +170,7 @@ func ImportSecrets(ui *console.Console, dcli drone.Client, org string, repo stri
 			ui.Errorf("An error occurred while reading secret file %#v: %v\n", file, err)
 		}
 
-		ui.Printf("Adding secret %#v...", key)
+		ui.Printf("Adding secret %#v from file...\n", key)
 		if err := CreateOrUpdateSecret(dcli, org, repo, key, string(value), false); err != nil {
 			ui.Errorf("An error occurred while adding secret: %v\n", err)
 		}
@@ -217,23 +217,23 @@ func SplitKeyValue(c string) (string, string) {
 func AskCredentials(ui *console.Console, u *url.URL) (pass string) {
 	for {
 		ui.Printf("Follow this link to get your Personal Token: %v://%v/account.\n", u.Scheme, u.Host)
-		ui.Printf("Enter your personal token: ")
-		ui.Scanln(&pass)
+
+		pass = ui.ReadString("Enter your personal token: ")
 
 		// build drone client
-		config := new(oauth2.Config)
-		auther := config.Client(context.Background(), &oauth2.Token{
-			AccessToken: pass,
-		})
+		auth := new(oauth2.Config).Client(context.Background(), &oauth2.Token{AccessToken: pass})
+		auth.Timeout = 30 * time.Second
 
 		// create the drone client with authenticator
-		client := drone.NewClient(u.String(), auther)
+		client := drone.NewClient(u.String(), auth)
 
 		// gets the current user
-		if _, err := client.Self(); err == nil {
+		_, err := client.Self()
+		if err == nil {
 			return
 		}
 
+		ui.Errorf("An error occurred while validating your personal token: %v\n", err)
 		ui.Errorf("Credentials do not appear to be valid, try again...\n")
 	}
 }

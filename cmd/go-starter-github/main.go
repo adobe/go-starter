@@ -98,7 +98,7 @@ func main() {
 			ui.Fatalf("An error occurred while creating GitHub repository: %v\n", err)
 		}
 
-		ui.Printf("Repository %v/%v already exists\n", org, name)
+		ui.Printf("Repository %v/%v already exists, skipping repository configuration...\n", org, name)
 		return
 	}
 
@@ -181,12 +181,12 @@ func run(name string, args ...string) error {
 
 func AskCredentials(ui *console.Console) (user string, pass string) {
 	for {
-		ui.Printf("Enter your GitHub username: ")
-		ui.Scanln(&user)
+		user = ui.ReadString("Enter your GitHub username: ")
+
 		ui.Printf("\n")
 		ui.Printf("Follow this link and generate personal token: https://git.io/fjisU. Scroll to the bottom of the page and click \"Generate token\".\n")
-		ui.Printf("Enter your personal token: ")
-		ui.Scanln(&pass)
+
+		pass = ui.ReadString("Enter your personal token: ")
 
 		// build github client
 		cli := github.NewClient(&http.Client{
@@ -202,6 +202,7 @@ func AskCredentials(ui *console.Console) (user string, pass string) {
 			return
 		}
 
+		ui.Errorf("An error occurred while validating credentials: %v\n", err)
 		ui.Errorf("Credentials do not appear to be valid, try again...\n")
 	}
 }

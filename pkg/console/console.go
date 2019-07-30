@@ -1,10 +1,12 @@
 package console
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/logrusorgru/aurora"
 	"io"
 	"os"
+	"strings"
 )
 
 type Console struct {
@@ -16,8 +18,11 @@ func New(r io.Reader, w io.Writer) *Console {
 	return &Console{r: r, w: w}
 }
 
-func (l *Console) Scanln(arg interface{}) {
-	_, _ = fmt.Fscanln(l.r, arg)
+func (l *Console) ReadString(prompt string) string {
+	l.Printf(prompt)
+
+	input, _ := bufio.NewReader(l.r).ReadString('\n')
+	return strings.TrimSuffix(input, "\n")
 }
 
 func (l *Console) Debugf(format string, args ...interface{}) {
