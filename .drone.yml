@@ -83,8 +83,6 @@ steps:
     template: formula.template.rb
     url: https://github.com/magento-mcom/go-starter/releases/download/${DRONE_TAG}/go-starter-darwin-amd64.tgz
     version: ${DRONE_TAG}
-  environment:
-    GITHUB_TOKEN: { from_secret: github_token }
 
 ---
 kind: secret
