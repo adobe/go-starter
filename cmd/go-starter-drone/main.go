@@ -31,7 +31,7 @@ func usage() {
 	_, _ = fmt.Fprintf(out, "\n")
 	_, _ = fmt.Fprintf(out, "Usage: %s [flags] <drone-url> <github-org> <github-repo>\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
-	_, _ = fmt.Fprintf(out, "    %s magento-mcom awesome-project\n", os.Args[0])
+	_, _ = fmt.Fprintf(out, "    %s https://cloud.drone.io magento-mcom awesome-project\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nFlags:\n")
 	flag.PrintDefaults()
 	_, _ = fmt.Fprintf(out, "\n")
