@@ -27,18 +27,13 @@ var (
 
 func usage() {
 	out := flag.CommandLine.Output()
-
 	_, _ = fmt.Fprintf(out, "go-starter-drone version %v (commit %v)\n", version, commit)
 	_, _ = fmt.Fprintf(out, "\n")
 	_, _ = fmt.Fprintf(out, "Usage: %s [flags] <drone-url> <github-org> <github-repo>\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
 	_, _ = fmt.Fprintf(out, "    %s magento-mcom awesome-project\n", os.Args[0])
-
-	if flag.NFlag() != 0 {
-		_, _ = fmt.Fprintf(out, "\nFlags:\n")
-		flag.PrintDefaults()
-	}
-
+	_, _ = fmt.Fprintf(out, "\nFlags:\n")
+	flag.PrintDefaults()
 	_, _ = fmt.Fprintf(out, "\n")
 }
 

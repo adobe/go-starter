@@ -16,18 +16,13 @@ var skips = []string{".starter/", ".starter.yml", ".git/"}
 
 func usage() {
 	out := flag.CommandLine.Output()
-
 	_, _ = fmt.Fprintf(out, "go-starter-replace version %v (commit %v)\n", version, commit)
 	_, _ = fmt.Fprintf(out, "\n")
 	_, _ = fmt.Fprintf(out, "Usage: %s [flags]\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
 	_, _ = fmt.Fprintf(out, "    STARTER_PLACEHOLDER1=VALUE1 STARTER_PLACEHOLDER2=VALUE2 %s\n", os.Args[0])
-
-	if flag.NFlag() != 0 {
-		_, _ = fmt.Fprintf(out, "\nFlags:\n")
-		flag.PrintDefaults()
-	}
-
+	_, _ = fmt.Fprintf(out, "\nFlags:\n")
+	flag.PrintDefaults()
 	_, _ = fmt.Fprintf(out, "\n")
 }
 
