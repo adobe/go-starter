@@ -83,7 +83,7 @@ steps:
     username: { from_secret: docker_username }
     password: { from_secret: docker_password }
     repo: mcom/gostarter
-    tags: [ "${DRONE_TAG=latest}", "${DRONE_COMMIT_SHA:0:7}" ]
+    tags: [ "latest", "${DRONE_TAG}", "${DRONE_COMMIT_SHA:0:7}" ]
 
 - name: github release
   image: socialengine/github-release
