@@ -10,7 +10,7 @@ image_pull_secrets:
   - docker_registry
 
 steps:
-- name: install
+- name: dep
   image: mcom/gobuilder:1.12
   pull: always
   commands: [ "make dep" ]
@@ -38,12 +38,25 @@ trigger:
   status: [ "success"]
 
 steps:
-- name: install
+- name: dep
   image: mcom/gobuilder:1.12
   pull: always
   commands: [ "make dep" ]
 
-- name: build
+- name: build linux
+  image: mcom/gobuilder:1.12
+  pull: always
+  commands: [ "make build" ]
+  environment:
+    BUILDARGS: -a -installsuffix cgo
+    BUILDCOMMIT: ${DRONE_COMMIT_SHA:0:7}
+    BUILDLDFLAGS: -extldflags "-static"
+    BUILDOUTPREFIX: build/linux-amd64/
+    BUILDTAG: ${DRONE_TAG}
+    GOARCH: amd64
+    GOOS: linux
+
+- name: build darwin
   image: mcom/gobuilder:1.12cross
   pull: always
   commands: [ "make build" ]
@@ -57,17 +70,28 @@ steps:
     GOARCH: amd64
     GOOS: darwin
 
-- name: pack
-  image: mcom/gobuilder:1.12
+- name: pack tarball
+  image: mcom/zipbuilder
   pull: always
-  commands: [ "tar -C build/darwin-amd64 -cvzf go-starter-darwin-amd64.tgz ." ]
+  commands:
+    - "tar -C build/darwin-amd64 -cvzf go-starter-darwin-amd64.tgz ."
+    - "tar -C build/linux-amd64  -cvzf go-starter-linux-amd64.tgz  ."
 
-- name: release
+- name: docker image
+  image: plugins/docker:latest
+  settings:
+    username: { from_secret: docker_username }
+    password: { from_secret: docker_password }
+    repo: mcom/gostarter
+    tags: [ "${DRONE_TAG=latest}", "${DRONE_COMMIT_SHA:0:7}" ]
+
+- name: github release
   image: socialengine/github-release
   pull: always
   commands:
   - github-release release --user magento-mcom --repo go-starter --tag ${DRONE_TAG} --name ${DRONE_TAG}
   - github-release upload  --user magento-mcom --repo go-starter --tag ${DRONE_TAG} --name go-starter-darwin-amd64.tgz --file ./go-starter-darwin-amd64.tgz
+  - github-release upload  --user magento-mcom --repo go-starter --tag ${DRONE_TAG} --name go-starter-linux-amd64.tgz --file ./go-starter-linux-amd64.tgz
   environment:
     GITHUB_RELEASE_VERSION: v0.7.2
     GITHUB_TOKEN: { from_secret: github_token }
@@ -90,6 +114,20 @@ name: docker_registry
 get:
   path: secret/dx_magento_mom_droneci/registry/docker.io
   name: config
+
+---
+kind: secret
+name: docker_username
+get:
+  path: secret/dx_magento_mom_droneci/registry/docker.io
+  name: username
+
+---
+kind: secret
+name: docker_password
+get:
+  path: secret/dx_magento_mom_droneci/registry/docker.io
+  name: password
 
 ---
 kind: secret
