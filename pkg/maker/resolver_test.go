@@ -18,11 +18,11 @@ func TestResolveTemplateURL(t *testing.T) {
 		input string
 		url   string
 	}{
-		{input: "go-scaffolding", url: "https://github.com/magento-mcom/go-scaffolding"},
-		{input: "mom/go-scaffolding", url: "https://github.com/mom/go-scaffolding"},
-		{input: "//github.adobe.com/mom/go-scaffolding", url: "https://github.adobe.com/mom/go-scaffolding"},
-		{input: "git://github.adobe.com/mom/go-scaffolding", url: "git://github.adobe.com/mom/go-scaffolding"},
-		{input: "git@github.adobe.com:mom/go-scaffolding", url: "git@github.adobe.com:mom/go-scaffolding"},
+		{input: "go-scaffolding", url: "https://github.com/go-scaffolding"},
+		{input: "adobe/go-scaffolding", url: "https://github.com/adobe/go-scaffolding"},
+		{input: "//github.adobe.com/adobe/go-scaffolding", url: "https://github.adobe.com/adobe/go-scaffolding"},
+		{input: "git://github.adobe.com/adobe/go-scaffolding", url: "git://github.adobe.com/adobe/go-scaffolding"},
+		{input: "git@github.adobe.com:adobe/go-scaffolding", url: "git@github.adobe.com:adobe/go-scaffolding"},
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

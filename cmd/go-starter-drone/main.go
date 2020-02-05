@@ -16,8 +16,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/drone/drone-go/drone"
-	"github.com/magento-mcom/go-starter/pkg/console"
-	"github.com/magento-mcom/go-starter/pkg/keychainx"
+	"github.com/adobe/go-starter/pkg/console"
+	"github.com/adobe/go-starter/pkg/keychainx"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/url"
@@ -42,7 +42,7 @@ func usage() {
 	_, _ = fmt.Fprintf(out, "\n")
 	_, _ = fmt.Fprintf(out, "Usage: %s [flags] <drone-url> <github-org> <github-repo>\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
-	_, _ = fmt.Fprintf(out, "    %s https://cloud.drone.io magento-mcom awesome-project\n", os.Args[0])
+	_, _ = fmt.Fprintf(out, "    %s https://cloud.drone.io adobe awesome-project\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nFlags:\n")
 	flag.PrintDefaults()
 	_, _ = fmt.Fprintf(out, "\n")
@@ -61,12 +61,12 @@ func main() {
 	uri, err := url.Parse(flag.Arg(0))
 	if err != nil {
 		flag.Usage()
-		ui.Fatalf("An error occurred while parsing Drone URL: %v. Enter URL with protocol, for example: https://drone.bcn.magento.com.\n", err)
+		ui.Fatalf("An error occurred while parsing Drone URL: %v. Enter URL with protocol, for example: https://cloud.drone.io.\n", err)
 	}
 
 	if uri.Host == "" {
 		flag.Usage()
-		ui.Fatalf("Drone hostname is empty. Enter URL with protocol, for example: https://drone.bcn.magento.com.\n")
+		ui.Fatalf("Drone hostname is empty. Enter URL with protocol, for example: https://cloud.drone.io.\n")
 	}
 
 	org, repo := flag.Arg(1), flag.Arg(2)

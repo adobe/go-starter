@@ -1,4 +1,4 @@
-module github.com/magento-mcom/go-starter
+module github.com/adobe/go-starter
 
 go 1.12
 

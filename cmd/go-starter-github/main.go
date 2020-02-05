@@ -16,8 +16,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/google/go-github/github"
-	"github.com/magento-mcom/go-starter/pkg/console"
-	"github.com/magento-mcom/go-starter/pkg/keychainx"
+	"github.com/adobe/go-starter/pkg/console"
+	"github.com/adobe/go-starter/pkg/keychainx"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -34,7 +34,7 @@ func usage() {
 	_, _ = fmt.Fprintf(out, "\n")
 	_, _ = fmt.Fprintf(out, "Usage: %s [flags] <github-org> <github-repo>\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
-	_, _ = fmt.Fprintf(out, "    %s magento-mcom awesome-project\n", os.Args[0])
+	_, _ = fmt.Fprintf(out, "    %s adobe awesome-project\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nFlags:\n")
 	flag.PrintDefaults()
 	_, _ = fmt.Fprintf(out, "\n")

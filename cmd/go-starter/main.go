@@ -14,8 +14,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/magento-mcom/go-starter/pkg/console"
-	"github.com/magento-mcom/go-starter/pkg/maker"
+	"github.com/adobe/go-starter/pkg/console"
+	"github.com/adobe/go-starter/pkg/maker"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"

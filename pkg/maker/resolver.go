@@ -13,7 +13,6 @@ package maker
 
 import (
 	"net/url"
-	"strings"
 )
 
 // ResolveTemplateURL URL
@@ -29,10 +28,6 @@ func ResolveTemplateURL(template string) string {
 
 	if u.Host == "" {
 		u.Host = "github.com"
-	}
-
-	if !strings.ContainsRune(u.Path, '/') {
-		u.Path = "magento-mcom/" + u.Path
 	}
 
 	return u.String()

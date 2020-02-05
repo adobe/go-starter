@@ -15,7 +15,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/magento-mcom/go-starter/pkg/console"
+	"github.com/adobe/go-starter/pkg/console"
 	"io/ioutil"
 	"os"
 	"path/filepath"
