@@ -1,0 +1,85 @@
+---
+type: docker
+kind: pipeline
+name: test
+
+workspace:
+  base: /go
+  path: src/github.com/adobe/go-starter
+
+steps:
+- name: dep
+  image: mcom/gobuilder:1.12
+  pull: always
+  commands: [ "make dep" ]
+
+- name: test
+  image: mcom/gobuilder:1.12
+  pull: always
+  commands: [ "make test" ]
+
+---
+type: docker
+kind: pipeline
+name: release
+
+workspace:
+  base: /go
+  path: src/github.com/adobe/go-starter
+
+depends_on: [ test ]
+
+trigger:
+  event: [ tag ]
+  status: [ "success"]
+
+steps:
+- name: dep
+  image: mcom/gobuilder:1.12
+  pull: always
+  commands: [ "make dep" ]
+
+- name: build linux
+  image: mcom/gobuilder:1.12
+  pull: always
+  commands: [ "make build" ]
+  environment:
+    BUILDARGS: -a -installsuffix cgo
+    BUILDCOMMIT: ${DRONE_COMMIT_SHA:0:7}
+    BUILDLDFLAGS: -extldflags "-static"
+    BUILDOUTPREFIX: build/linux-amd64/
+    BUILDTAG: ${DRONE_TAG}
+    GOARCH: amd64
+    GOOS: linux
+
+- name: build darwin
+  image: mcom/gobuilder:1.12cross
+  pull: always
+  commands: [ "make build" ]
+  environment:
+    BUILDCOMMIT: ${DRONE_COMMIT_SHA:0:7}
+    BUILDLDFLAGS: -linkmode external -s
+    BUILDOUTPREFIX: build/darwin-amd64/
+    BUILDTAG: ${DRONE_TAG}
+    CC: o64-clang
+    CXX: o64-clang++
+    GOARCH: amd64
+    GOOS: darwin
+
+- name: make tarball
+  image: mcom/zipbuilder
+  pull: always
+  commands:
+    - "tar -C build/darwin-amd64 -cvzf go-starter-darwin-amd64.tgz ."
+    - "tar -C build/linux-amd64  -cvzf go-starter-linux-amd64.tgz  ."
+
+- name: github release
+  image: socialengine/github-release
+  pull: always
+  commands:
+  - github-release release --user adobe --repo go-starter --tag ${DRONE_TAG} --name ${DRONE_TAG}
+  - github-release upload  --user adobe --repo go-starter --tag ${DRONE_TAG} --name go-starter-darwin-amd64.tgz --file ./go-starter-darwin-amd64.tgz
+  - github-release upload  --user adobe --repo go-starter --tag ${DRONE_TAG} --name go-starter-linux-amd64.tgz --file ./go-starter-linux-amd64.tgz
+  environment:
+    GITHUB_RELEASE_VERSION: v0.7.2
+    GITHUB_TOKEN: { from_secret: github_token }
