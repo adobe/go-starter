@@ -11,7 +11,6 @@ Download latest release from [release](https://github.com/adobe/go-starter/relea
 ```
 curl https://github.com/adobe/go-starter/releases/latest/download/go-starter-darwin-amd64.tgz \
   -sSfL -o go-starter.tgz
- 
 ```
 
 **Linux**
@@ -19,7 +18,6 @@ curl https://github.com/adobe/go-starter/releases/latest/download/go-starter-dar
 ```
 curl https://github.com/adobe/go-starter/releases/latest/download/go-starter-linux-amd64.tgz \
   -sSfL -o go-starter.tgz
- 
 ```
 
 Unpack content of the archieve to a directory listed in `$PATH`. The archieve includes multiple binaries shipped with `go-starter`.
@@ -27,7 +25,6 @@ Unpack content of the archieve to a directory listed in `$PATH`. The archieve in
 ```
 tar -xvzf go-starter.tgz -C /usr/local/bin
 rm go-starter.tgz
- 
 ```
 
 Run `go-starter` to verify it's installed correctly.
