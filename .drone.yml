@@ -13,6 +13,11 @@ steps:
   pull: always
   commands: [ "make dep" ]
 
+- name: lint
+  image: golangci/golangci-lint:v1.23-alpine
+  pull: always
+  commands: [ "golangci-lint run" ]
+
 - name: test
   image: mcom/gobuilder:1.12
   pull: always
@@ -68,14 +73,12 @@ steps:
 
 - name: make tarball
   image: mcom/zipbuilder
-  pull: always
   commands:
     - "tar -C build/darwin-amd64 -cvzf go-starter-darwin-amd64.tgz ."
     - "tar -C build/linux-amd64  -cvzf go-starter-linux-amd64.tgz  ."
 
 - name: github release
   image: socialengine/github-release
-  pull: always
   commands:
   - github-release release --user adobe --repo go-starter --tag ${DRONE_TAG} --name ${DRONE_TAG}
   - github-release upload  --user adobe --repo go-starter --tag ${DRONE_TAG} --name go-starter-darwin-amd64.tgz --file ./go-starter-darwin-amd64.tgz

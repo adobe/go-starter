@@ -9,7 +9,6 @@ then your use, modification, or distribution of it requires the prior
 written permission of Adobe.
 */
 
-
 package maker
 
 import (

@@ -17,6 +17,9 @@ dep:
 test:
 	go test ./...
 
+lint:
+	golangci-lint run
+
 go-starter: cmd/go-starter/* pkg/*
 	go build -ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT} ${BUILDLDFLAGS}" ${BUILDARGS} \
 		-o ${BUILDOUTPREFIX}go-starter cmd/go-starter/main.go
