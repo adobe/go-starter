@@ -40,7 +40,7 @@ func usage() {
 	out := flag.CommandLine.Output()
 	_, _ = fmt.Fprintf(out, "go-starter-drone version %v (commit %v)\n", version, commit)
 	_, _ = fmt.Fprintf(out, "\n")
-	_, _ = fmt.Fprintf(out, "Usage: %s [flags] <drone-url> <github-org> <github-repo>\n", os.Args[0])
+	_, _ = fmt.Fprintf(out, "Usage: %s [flags] <drone-url> <org-name> <repo-name>\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
 	_, _ = fmt.Fprintf(out, "    %s https://cloud.drone.io adobe awesome-project\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nFlags:\n")
@@ -72,12 +72,12 @@ func main() {
 	org, repo := flag.Arg(1), flag.Arg(2)
 	if org == "" {
 		flag.Usage()
-		ui.Fatalf("GitHub organisation is empty\n")
+		ui.Fatalf("Organisation name is empty\n")
 	}
 
 	if repo == "" {
 		flag.Usage()
-		ui.Fatalf("GitHub repository name is empty\n")
+		ui.Fatalf("Repository name is empty\n")
 	}
 
 	// get credentials from OSX keychain

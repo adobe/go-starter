@@ -41,12 +41,13 @@ func usage() {
 }
 
 func main() {
-	var remote, deployKey string
+	var remote, branch, deployKey string
 	var public, issues, projects, wiki bool
 	var collaborators SliceFlag
 
 	flag.Usage = usage
 	flag.StringVar(&remote, "remote", "upstream", "Name of the remote in local repository")
+	flag.StringVar(&branch, "branch", "master", "Name of the master branch")
 	flag.BoolVar(&issues, "with-issues", false, "Enable issues in GitHub")
 	flag.BoolVar(&projects, "with-projects", false, "Enable projects in GitHub")
 	flag.BoolVar(&wiki, "with-wiki", false, "Enable wiki page in GitHub")
@@ -92,11 +93,12 @@ func main() {
 
 	// create repository
 	repo, _, err := cli.Repositories.Create(context.Background(), org, &github.Repository{
-		Name:        github.String(name),
-		Private:     github.Bool(!public),
-		HasIssues:   github.Bool(issues),
-		HasProjects: github.Bool(projects),
-		HasWiki:     github.Bool(wiki),
+		Name:         github.String(name),
+		Private:      github.Bool(!public),
+		HasIssues:    github.Bool(issues),
+		HasProjects:  github.Bool(projects),
+		HasWiki:      github.Bool(wiki),
+		MasterBranch: github.String(branch),
 	})
 
 	if err != nil {
@@ -136,7 +138,7 @@ func main() {
 	}
 
 	// push to remote
-	if err := run("git", "push", "--set-upstream", "upstream", "master"); err != nil {
+	if err := run("git", "push", "--set-upstream", remote, branch); err != nil {
 		ui.Fatalf("An error occurred while running git push: %v\n", err)
 	}
 

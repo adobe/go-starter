@@ -30,7 +30,7 @@ func usage() {
 	_, _ = fmt.Fprintf(out, "\n")
 	_, _ = fmt.Fprintf(out, "Usage: %s [flags] <template> <destination>\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
-	_, _ = fmt.Fprintf(out, "    %s -var \"app_name=awesome-project\" skolodyazhnyy/go-starter-template awesome-project\n", os.Args[0])
+	_, _ = fmt.Fprintf(out, "    %s -var \"app_name=awesome-project\" go-starter/awesome-starter awesome-project\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nFlags:\n")
 	flag.PrintDefaults()
 	_, _ = fmt.Fprintf(out, "\n")
