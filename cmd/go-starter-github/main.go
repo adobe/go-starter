@@ -91,8 +91,20 @@ func main() {
 		},
 	})
 
+	// get authenticated user so we can check if org value is username
+	self, _, err := cli.Users.Get(context.Background(), "")
+	if err != nil {
+		ui.Fatalf("An error occurred while fetching username from GitHub: %v\n", err)
+	}
+
+	// GitHub API requires org to be empty when creating repository under "current" account
+	createOrg := org
+	if self.Login != nil && createOrg == *self.Login {
+		createOrg = ""
+	}
+
 	// create repository
-	repo, _, err := cli.Repositories.Create(context.Background(), org, &github.Repository{
+	repo, _, err := cli.Repositories.Create(context.Background(), createOrg, &github.Repository{
 		Name:         github.String(name),
 		Private:      github.Bool(!public),
 		HasIssues:    github.Bool(issues),
