@@ -98,11 +98,71 @@ Go-starter ships with few additional binaries which can be used as tasks in `.st
 
 This binary recursively goes through files in current folder and replaces placeholders to variable values in files and their names. By default, placeholders are surrounded by `<` and `>`.
 
+#### Usage
+
+```bash
+Usage: go-starter-replace [flags]
+
+Example:
+    STARTER_PLACEHOLDER1=VALUE1 STARTER_PLACEHOLDER2=VALUE2 go-starter-replace
+
+Flags:
+  -prefix string
+        Placeholder prefix (default "<")
+  -suffix string
+        Placeholder suffix (default ">")
+```
+
 ### go-starter-github
 
 This binary automatically created GitHub repository, initiates local Git repository, adds GitHub remote and pushes changes to GitHub.
+
+#### Usage
+
+```bash
+Usage: go-starter-github [flags] <github-org> <github-repo>
+
+Example:
+    go-starter-github adobe awesome-project
+
+Flags:
+  -branch string
+        Name of the master branch (default "master")
+  -collaborator value
+        Add collaborators to the repository by GitHub username. You can grant permissions using following format: <username>:<permission>. Permission can be: pull (read only), push (read and write) or admin (everything), default is push. Can be specified multiple times. Example: --collaborator octocat:pull
+  -deploy-key string
+        Add SSH deployment key to the repository, add ':rw' suffix to grant write permissions to the key
+  -public
+        Make repository public
+  -remote string
+        Name of the remote in local repository (default "upstream")
+  -with-issues
+        Enable issues in GitHub
+  -with-projects
+        Enable projects in GitHub
+  -with-wiki
+        Enable wiki page in GitHub
+```
 
 ### go-starter-drone
 
 This binary configures drone integration and runs first build.
 
+#### Usage
+
+```bash
+Usage: go-starter-drone [flags] <drone-url> <org-name> <repo-name>
+
+Example:
+    go-starter-drone https://cloud.drone.io adobe awesome-project
+
+Flags:
+  -pull-secret-file value
+        Create a secret from file available for pull-requests (eq. --pull-secret-file=secret_name=./path/to/file)
+  -pull-secret-literal value
+        Create a secret from literal available for pull-requests (eq. --pull-secret-literal=secret_name=value)
+  -secret-file value
+        Create a secret from file (eq. --secret-file=secret_name=./path/to/file)
+  -secret-literal value
+        Create a secret from literal (eq. --secret-literal=secret_name=value)
+```
