@@ -34,12 +34,12 @@ Run `go-starter` to verify it's installed correctly.
 Run go-starter with template repository URL and path where you would like to create a new project, for example:
 
 ```bash
-go-starter https://github.com/adobe/go-service-starter awesome-project
+go-starter starter-template/hello-world-starter awesome-project
 ```
 
-You can specify full GitHub URL or just repository name (like so `adobe/go-service-starter`). 
+You can specify full GitHub URL or just repository name (like so `starter-template/hello-world-starter`). 
 
-Now, go-starter will clone [go-service-starter](https://github.com/adobe/go-service-starter) into `./awesome-project` directory and run tasks defined in [`.starter.yml`](https://github.com/adobe/go-service-starter/blob/master/.starter.yml). See "Templates" for more details.
+Now, go-starter will clone [hello-world-starter](https://github.com/starter-template/hello-world-starter) into `./awesome-project` directory and run tasks defined in [`.starter.yml`](https://github.com/starter-template/hello-world-starter/blob/master/.starter.yml). See "Templates" for more details.
 
 ### Advanced usage
 
