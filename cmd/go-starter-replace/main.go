@@ -24,10 +24,12 @@ import (
 
 var version, commit string
 var skips = []string{".starter/", ".starter.yml", ".git/"}
+var prefix, suffix = "<", ">"
+var reverse bool
 
 func usage() {
 	out := flag.CommandLine.Output()
-	_, _ = fmt.Fprintf(out, "go-starter-replace version %v (commit %v)\n", version, commit)
+	_, _ = fmt.Fprintf(out, "go-starter-update version %v (commit %v)\n", version, commit)
 	_, _ = fmt.Fprintf(out, "\n")
 	_, _ = fmt.Fprintf(out, "Usage: %s [flags]\n", os.Args[0])
 	_, _ = fmt.Fprintf(out, "\nExample:\n")
@@ -38,20 +40,37 @@ func usage() {
 }
 
 func main() {
-	var prefix, suffix string
-
 	flag.Usage = usage
-	flag.StringVar(&prefix, "prefix", "<", "Placeholder prefix")
-	flag.StringVar(&suffix, "suffix", ">", "Placeholder suffix")
+	flag.StringVar(&prefix, "prefix", prefix, "Placeholder prefix")
+	flag.StringVar(&suffix, "suffix", suffix, "Placeholder suffix")
+	flag.BoolVar(&reverse, "reverse", reverse, "Replace values with placeholders (useful to revert changes made by go-starter-update)")
 	flag.Parse()
 
-	ui := console.New(os.Stdin, os.Stdout)
+	replace(console.New(os.Stdin, os.Stdout), variables())
+}
 
-	vars := variables()
+func replace(ui *console.Console, vars map[string]string) {
+	// check if .starter.yml exists to prevent running in wrong directory
+	if _, err := os.Stat(".starter.yml"); os.IsNotExist(err) {
+		ui.Errorf("Current folder does not look like template, .starter.yml does not exist\n")
+		return
+	}
 
+	// create replace dictionary
+	dict := make(map[string]string)
+	for k, v := range vars {
+		key, val := prefix+k+suffix, v
+		if reverse {
+			key, val = val, key
+		}
+
+		dict[key] = val
+	}
+
+	// list of paths to rename
 	var renames []string
 
-	// walk through current folder and replace variables
+	// walk through current folder and update variables
 	err := filepath.Walk(".", func(path string, file os.FileInfo, err error) error {
 		if err != nil {
 			ui.Errorf("Unable to process path %#v: %v\n", path, err)
@@ -66,7 +85,7 @@ func main() {
 
 		name := file.Name()
 
-		if renamed := rename(name, prefix, suffix, vars); renamed != name {
+		if renamed := rename(name, dict); renamed != name {
 			renames = append(renames, path)
 		}
 
@@ -74,7 +93,7 @@ func main() {
 			return nil
 		}
 
-		ok, err := replace(path, prefix, suffix, vars)
+		ok, err := update(path, dict)
 		if err != nil {
 			return err
 		}
@@ -87,7 +106,7 @@ func main() {
 	})
 
 	for _, path := range renames {
-		renamed := rename(path, prefix, suffix, vars)
+		renamed := rename(path, dict)
 
 		ui.Printf("Renaming %#v to %#v\n", path, renamed)
 		if err := os.Rename(path, renamed); err != nil {
@@ -123,17 +142,17 @@ func variables() map[string]string {
 	return vars
 }
 
-// rename - replace placeholders in file name
-func rename(filename, prefix, suffix string, params map[string]string) string {
+// rename - update placeholders in file name
+func rename(filename string, params map[string]string) string {
 	for k, v := range params {
-		filename = strings.Replace(filename, prefix+k+suffix, v, -1)
+		filename = strings.Replace(filename, k, v, -1)
 	}
 
 	return filename
 }
 
-// replace placeholders in file
-func replace(filename, prefix, suffix string, params map[string]string) (bool, error) {
+// update placeholders in file
+func update(filename string, params map[string]string) (bool, error) {
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return false, err
@@ -142,7 +161,7 @@ func replace(filename, prefix, suffix string, params map[string]string) (bool, e
 	output := input
 
 	for k, v := range params {
-		output = bytes.Replace(output, []byte(prefix+k+suffix), []byte(v), -1)
+		output = bytes.Replace(output, []byte(k), []byte(v), -1)
 	}
 
 	if bytes.Equal(input, output) {
