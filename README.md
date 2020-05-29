@@ -2,6 +2,8 @@
 
 Go-starter allows to bootstrap a new project from a template. It uses Git repositories as templates and is shipped with batch of utilities to make bootstarpping easier.
 
+[Learn more](https://medium.com/@sergey.kolodyazhnyy/go-starter-f47daac57f44)
+
 ## Installation
 
 Download latest release from [release](https://github.com/adobe/go-starter/releases) page using one of the commands below.
